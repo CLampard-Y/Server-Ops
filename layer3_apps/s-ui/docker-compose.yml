@@ -11,13 +11,7 @@ services:
     restart: unless-stopped
     network_mode: host
     volumes:
-      - s-ui_data:/app/db
-      - s-ui_cert:/app/cert
+      - ./data/db:/app/db
+      - ./data/cert:/app/cert
     environment:
       - TZ=Asia/Shanghai
-
-volumes:
-  s-ui_data:
-    driver: local
-  s-ui_cert:
-    driver: local

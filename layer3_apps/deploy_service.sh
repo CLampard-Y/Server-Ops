@@ -111,6 +111,7 @@ sync_files() {
         rsync -av --delete \
             --exclude='.git' \
             --exclude='.gitkeep' \
+            --exclude='.env' \
             --exclude='README.md' \
             "${src}/" "${dst}/"
         info "文件已通过 rsync 同步"

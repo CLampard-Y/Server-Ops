@@ -4,6 +4,10 @@
 #  所有模块通过 source 加载此文件，获得统一的日志与检查函数
 # ===========================================================
 
+# ── 防止重复 source ──
+[[ -n "${_COMMON_SH_LOADED:-}" ]] && return 0
+_COMMON_SH_LOADED=1
+
 # ── 颜色常量 ──
 readonly C_RED='\033[0;31m'
 readonly C_GREEN='\033[0;32m'

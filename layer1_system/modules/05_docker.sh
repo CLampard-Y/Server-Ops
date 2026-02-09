@@ -17,7 +17,7 @@ run_05_docker() {
         codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
 
         curl -fsSL "https://download.docker.com/linux/${distro_id}/gpg" | \
-            gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
         chmod a+r /etc/apt/keyrings/docker.gpg
 
         # 添加 Docker 仓库

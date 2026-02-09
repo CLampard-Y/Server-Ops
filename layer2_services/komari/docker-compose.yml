@@ -12,10 +12,6 @@ services:
     ports:
       - "3399:3399"
     volumes:
-      - komari_data:/opt/komari/data
+      - ./data:/opt/komari/data
     environment:
       - TZ=Asia/Shanghai
-
-volumes:
-  komari_data:
-    driver: local

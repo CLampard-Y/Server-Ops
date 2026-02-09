@@ -12,12 +12,8 @@ services:
     ports:
       - "5244:5244"
     volumes:
-      - alist_data:/opt/alist/data
+      - ./data:/opt/alist/data
     environment:
       - TZ=Asia/Shanghai
       - PUID=0
       - PGID=0
-
-volumes:
-  alist_data:
-    driver: local

@@ -224,8 +224,8 @@ _show_deployed_services() {
             local svc_name
             svc_name=$(basename "${svc_dir}")
             local running="停止"
-            if cd "${svc_dir}" 2>/dev/null && [[ -f docker-compose.yml ]]; then
-                docker compose ps --format '{{.Status}}' 2>/dev/null | grep -qi 'up' && running="${GREEN}运行中${NC}"
+            if [[ -f "${svc_dir}/docker-compose.yml" ]]; then
+                (cd "${svc_dir}" && docker compose ps --format '{{.Status}}' 2>/dev/null) | grep -qi 'up' && running="${GREEN}运行中${NC}"
             fi
             printf "${CYAN}║${NC}    %-18s [%b]\n" "${svc_name}" "${running}"
             ((found++))

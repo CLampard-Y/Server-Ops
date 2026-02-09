@@ -1,0 +1,22 @@
+# ===========================================================
+#  Portainer CE — Docker 可视化管理面板
+#  文档: https://docs.portainer.io/
+#  部署目标: /home/Basic-Ops/portainer/
+# ===========================================================
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    environment:
+      - TZ=Asia/Shanghai
+
+volumes:
+  portainer_data:
+    driver: local

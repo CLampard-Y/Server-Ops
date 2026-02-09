@@ -1,0 +1,23 @@
+# ===========================================================
+#  S-UI — Xray 面板
+#  文档: https://github.com/alireza0/s-ui
+#  部署目标: /home/App-Ops/s-ui/
+# ===========================================================
+
+services:
+  s-ui:
+    image: alireza7/s-ui:latest
+    container_name: s-ui
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - s-ui_data:/app/db
+      - s-ui_cert:/app/cert
+    environment:
+      - TZ=Asia/Shanghai
+
+volumes:
+  s-ui_data:
+    driver: local
+  s-ui_cert:
+    driver: local

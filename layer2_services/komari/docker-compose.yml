@@ -1,0 +1,21 @@
+# ===========================================================
+#  Komari — 服务器监控面板
+#  文档: https://github.com/komari-monitor/komari
+#  部署目标: /home/Basic-Ops/komari/
+# ===========================================================
+
+services:
+  komari:
+    image: ghcr.io/komari-monitor/komari:latest
+    container_name: komari
+    restart: unless-stopped
+    ports:
+      - "3399:3399"
+    volumes:
+      - komari_data:/opt/komari/data
+    environment:
+      - TZ=Asia/Shanghai
+
+volumes:
+  komari_data:
+    driver: local

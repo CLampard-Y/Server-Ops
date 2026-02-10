@@ -60,7 +60,7 @@ echo -e "${C_CYAN}╔═══════════════════�
 echo -e "${C_CYAN}║${C_NC}  ${C_BOLD}✅  Layer 1: System Core 初始化完成!${C_NC}"
 echo -e "${C_CYAN}╠══════════════════════════════════════════════════════╣${C_NC}"
 printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "BBR:"     "$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null)"
-printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "Docker:"  "$(docker --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+')"
+printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "Docker:"  "$(docker --version 2>/dev/null | sed -n 's/.*version \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')"
 printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "Compose:" "$(docker compose version --short 2>/dev/null)"
 printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "时区:"    "$(timedatectl show --property=Timezone --value)"
 printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "Locale:"  "$(locale 2>/dev/null | grep LANG= | head -1)"

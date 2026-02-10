@@ -32,7 +32,9 @@ warn()  { echo -e "${YELLOW}[!]${NC} $*"; }
 error() { echo -e "${RED}[✗]${NC} $*"; exit 1; }
 
 # ── 前置检查 ──
-[[ $EUID -ne 0 ]] && error "请使用 root 权限运行: sudo bash $0"
+if [[ $EUID -ne 0 ]]; then
+    error "请使用 root 权限运行: sudo bash $0"
+fi
 
 # ===========================================================
 #  GitHub Username 交互获取
@@ -172,7 +174,9 @@ show_status() {
 
     # Docker
     local docker_ver="未安装"
-    command -v docker &>/dev/null && docker_ver=$(docker --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+')
+    if command -v docker &>/dev/null; then
+        docker_ver=$(docker --version 2>/dev/null | sed -n 's/.*version \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')
+    fi
     printf "${CYAN}║${NC}  %-14s %-38s${CYAN}║${NC}\n" "Docker:" "${docker_ver}"
 
     # Compose

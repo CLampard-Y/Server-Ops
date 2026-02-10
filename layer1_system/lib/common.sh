@@ -37,7 +37,9 @@ banner() {
 
 # ── 前置检查 ──
 require_root() {
-    [[ $EUID -ne 0 ]] && error "请使用 root 权限运行: sudo bash $0"
+    if [[ $EUID -ne 0 ]]; then
+        error "请使用 root 权限运行: sudo bash $0"
+    fi
 }
 
 require_debian_like() {

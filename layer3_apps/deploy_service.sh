@@ -46,7 +46,9 @@ banner() {
 
 # ── 前置检查 ──
 preflight() {
-    [[ $EUID -ne 0 ]] && die "请使用 root 权限运行: sudo bash $0"
+    if [[ $EUID -ne 0 ]]; then
+        die "请使用 root 权限运行: sudo bash $0"
+    fi
 
     if ! command -v docker &>/dev/null; then
         die "Docker 未安装！请先执行 Layer 1 初始化:\n  sudo bash /home/Server-Ops/layer1_system/install_core.sh"

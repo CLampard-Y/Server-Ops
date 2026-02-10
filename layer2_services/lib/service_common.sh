@@ -35,7 +35,9 @@ readonly BASIC_OPS_HOME="/home/Basic-Ops"
 
 # ── 前置检查 ──
 svc_require_root() {
-    [[ $EUID -ne 0 ]] && svc_error "请使用 root 权限运行: sudo bash $0"
+    if [[ $EUID -ne 0 ]]; then
+        svc_error "请使用 root 权限运行: sudo bash $0"
+    fi
 }
 
 svc_require_docker() {

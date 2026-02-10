@@ -10,7 +10,7 @@ services:
     container_name: komari
     restart: unless-stopped
     ports:
-      - "3399:3399"
+      - "3399:25774"  # 容器内部监听 25774，映射到主机 3399
     volumes:
       - ./data:/opt/komari/data
     environment:

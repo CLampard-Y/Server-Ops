@@ -1,0 +1,37 @@
+# ===========================================================
+#  Komari Agent — 服务器监控客户端
+#  文档: https://github.com/komari-monitor/komari
+#  部署目标: /home/App-Ops/komari-agent/
+#
+#  使用说明:
+#  1. 修改 KOMARI_SERVER 为你的 Komari Server 地址
+#  2. 修改 KOMARI_SECRET 为在面板中生成的密钥
+#  3. 运行: sudo bash /home/Server-Ops/layer3_apps/deploy_service.sh komari-agent
+# ===========================================================
+
+services:
+  komari-agent:
+    image: ghcr.io/komari-monitor/komari-agent:latest
+    container_name: komari-agent
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    command:
+      - "-e"
+      - "http://64.81.114.168:3399"
+      - "--auto-discovery"
+      - "pOloaZM7XnsPqiwbSucOrozd"
+    volumes:
+      # 只读挂载：用于读取宿主机系统信息（监控所需，不产生文件）
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host/root:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # 数据持久化：Agent 产生的文件存储在本地目录
+      - ./data:/app/data                    # Agent 数据目录（日志、缓存等）
+      - ./config:/app/config                # Agent 配置目录（如果需要持久化配置）
+    environment:
+      - TZ=Asia/Shanghai
+      - HOST_PROC=/host/proc
+      - HOST_SYS=/host/sys
+      - HOST_ROOT=/host/root

@@ -11,6 +11,15 @@ run_03_sysctl_bbr() {
     local sysctl_dst="/etc/sysctl.d/99-server-ops-optim.conf"
 
     if [[ -f "${sysctl_src}" ]]; then
+        # 清除 /etc/sysctl.conf 中与我们配置冲突的条目
+        # /etc/sysctl.conf 优先级高于 /etc/sysctl.d/，会覆盖我们的设置
+        if [[ -f /etc/sysctl.conf ]]; then
+            sed -i '/^[[:space:]]*fs\.file-max/d' /etc/sysctl.conf
+            sed -i '/^[[:space:]]*net\.core\.default_qdisc/d' /etc/sysctl.conf
+            sed -i '/^[[:space:]]*net\.ipv4\.tcp_congestion_control/d' /etc/sysctl.conf
+            info "已清除 /etc/sysctl.conf 中的冲突条目"
+        fi
+
         cp -v "${sysctl_src}" "${sysctl_dst}"
         sysctl --system > /dev/null 2>&1
         info "内核参数已从 ${sysctl_src} 加载"

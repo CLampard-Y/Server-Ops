@@ -1,0 +1,28 @@
+# ===========================================================
+#  qBittorrent — PT / BT 下载器
+#  文档: https://www.qbittorrent.org/
+#  部署目标: /home/App-Ops/qbittorrent/
+#
+#  说明:
+#  - 使用 LinuxServer 的 qbittorrent 容器，适合服务器 WebUI 管理
+#  - 配置与下载目录落到 /home/App-Data/qbittorrent/，避免被 Layer 3 同步覆盖
+# ===========================================================
+
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Asia/Shanghai
+      - WEBUI_PORT=18080
+      - TORRENTING_PORT=45123
+    volumes:
+      - /home/App-Data/qbittorrent/config:/config
+      - /home/App-Data/qbittorrent/downloads:/downloads
+    ports:
+      - "18080:18080"
+      - "45123:45123"
+      - "45123:45123/udp"

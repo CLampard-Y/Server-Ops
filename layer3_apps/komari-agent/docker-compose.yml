@@ -18,9 +18,9 @@ services:
     privileged: true
     command:
       - "-e"
-      - "http://64.81.114.168:3399"
+      - "http://209.54.101.86:3399/"
       - "--auto-discovery"
-      - "pOloaZM7XnsPqiwbSucOrozd"
+      - "YOUR-KEY"
     volumes:
       # 只读挂载：用于读取宿主机系统信息（监控所需，不产生文件）
       - /proc:/host/proc:ro

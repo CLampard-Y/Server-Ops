@@ -15,6 +15,7 @@
 #    - python3-venv/python3-dev: Layer 4 uv/科学计算 venv 基础
 #    - tmux: 远程开发与长任务会话管理
 #    - yq: YAML/Compose 配置检查与自动化处理
+#    - bubblewrap: Codex/Linux sandbox 系统依赖
 # ===========================================================
 
 run_01_base_packages() {
@@ -64,7 +65,7 @@ run_01_base_packages() {
         # 安全
         ca-certificates gnupg lsb-release
         apt-transport-https
-        ufw fail2ban
+        ufw fail2ban bubblewrap
         # 监控/诊断
         htop iotop sysstat tmux
         # 文件管理

@@ -123,7 +123,7 @@ Layer 1 负责 root 级系统初始化。
 | `06_swap` | Swap 不足时补充 Server-Ops `/swapfile` |
 | `07_ssh_hardening` | GitHub 公钥导入 + SSH drop-in hardening |
 
-Layer 1 审计后已强化回滚与验证逻辑：sysctl 应用失败会回滚配置；SSH hardening 会按目标用户上下文验证有效配置后再 reload/restart SSH。
+Layer 1 审计后已强化回滚与验证逻辑：sysctl 应用失败会回滚配置；SSH hardening 会按目标用户上下文验证有效配置后再 reload/restart SSH；基础包中包含 `bubblewrap`，用于支持 Codex/Linux sandbox。
 
 单独执行：
 

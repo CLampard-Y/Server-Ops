@@ -93,11 +93,11 @@ sudo reboot
 | 开发/版本控制 | `git`、`vim`、`unzip` |
 | 编译/构建工具链 | `build-essential`、`pkg-config`、`libssl-dev`、`make`、`cmake`、`clang`、`lld` |
 | Python 基础 | `python3`、`python3-pip`、`python3-venv`、`python3-dev` |
-| 安全 | `ca-certificates`、`gnupg`、`lsb-release`、`apt-transport-https`、`ufw`、`fail2ban` |
+| 安全/沙箱 | `ca-certificates`、`gnupg`、`lsb-release`、`apt-transport-https`、`ufw`、`fail2ban`、`bubblewrap` |
 | 监控/诊断 | `htop`、`iotop`、`sysstat`、`tmux` |
 | 文件/配置处理 | `jq`、`yq`、`tree`、`ncdu`、`rsync` |
 
-说明：Layer 1 只安装 Python 和编译依赖的系统基础。科学计算包不进入系统 Python，后续由 Layer 4 使用 `uv + venv` 安装。
+说明：Layer 1 只安装 Python 和编译依赖的系统基础。科学计算包不进入系统 Python，后续由 Layer 4 使用 `uv + venv` 安装。`bubblewrap` 用于支持 Codex 等工具在 Linux 上使用系统级 sandbox。
 
 ## 7. APT upgrade 策略
 

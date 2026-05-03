@@ -222,7 +222,7 @@ Noir、Barretenberg/BB、Risc0、SP1 暂未默认接入，后续按学习阶段�
 
 ## 8. Codex + cc-switch-cli
 
-HK profile 默认安装 Codex CLI 和 cc-switch-cli，但不会写入任何 provider 或 API key。
+HK profile 默认安装 Codex CLI 和 cc-switch-cli，但不会写入任何 provider 或 API key。Codex 在 Linux 上会使用 `bubblewrap` 作为 sandbox 依赖；该系统包由 Layer 1 安装。
 
 安装后在目标用户账号下执行：
 

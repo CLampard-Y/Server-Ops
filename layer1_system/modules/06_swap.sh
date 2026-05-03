@@ -9,54 +9,48 @@ run_06_swap() {
 
     local swap_size="2G"
     local swap_size_mb=2048  # 2G = 2048MB
+    local swapfile="/swapfile"
 
-    # 检查是否存在 swap
-    if [[ $(swapon --show | wc -l) -gt 0 ]]; then
-        # 获取当前 swap 大小（单位：MB）
-        local current_swap_mb
-        current_swap_mb=$(free -m | awk '/Swap/{print $2}')
-        
-        if [[ ${current_swap_mb} -ge ${swap_size_mb} ]]; then
-            info "Swap 已存在且足够: $(free -h | awk '/Swap/{print $2}')，跳过"
-            return 0
-        else
-            warn "当前 Swap 仅 ${current_swap_mb}MB，小于目标 ${swap_size}，将重新创建..."
-            
-            # 关闭现有 swap
-            local swap_devices
-            swap_devices=$(swapon --show=NAME --noheadings)
-            while IFS= read -r swap_dev; do
-                [[ -z "${swap_dev}" ]] && continue
-                info "关闭 swap: ${swap_dev}"
-                swapoff "${swap_dev}"
-                
-                # 如果是文件类型的 swap，删除它
-                if [[ -f "${swap_dev}" ]]; then
-                    rm -f "${swap_dev}"
-                    info "已删除旧 swap 文件: ${swap_dev}"
-                fi
-                
-                # 从 fstab 中移除
-                if grep -q "${swap_dev}" /etc/fstab; then
-                    sed -i "\|${swap_dev}|d" /etc/fstab
-                    info "已从 /etc/fstab 移除: ${swap_dev}"
-                fi
-            done <<< "${swap_devices}"
-        fi
-    else
-        warn "未检测到 Swap，正在创建 ${swap_size}..."
+    local current_swap_mb
+    current_swap_mb=$(free -m | awk '/Swap/{print $2}')
+
+    if [[ ${current_swap_mb} -ge ${swap_size_mb} ]]; then
+        info "Swap 已存在且足够: $(free -h | awk '/Swap/{print $2}')，跳过"
+        return 0
     fi
 
-    # 创建新的 swap
-    info "正在创建 ${swap_size} swap 文件..."
-    fallocate -l ${swap_size} /swapfile
-    chmod 600 /swapfile
-    mkswap /swapfile > /dev/null
-    swapon /swapfile
+    warn "当前 Swap 为 ${current_swap_mb}MB，小于目标 ${swap_size}，将补充 Server-Ops swapfile"
+
+    if swapon --show=NAME --noheadings | grep -Fxq "${swapfile}"; then
+        warn "${swapfile} 已启用但总 Swap 仍不足，将仅重建 ${swapfile}"
+        swapoff "${swapfile}"
+    fi
+
+    if [[ -f "${swapfile}" ]]; then
+        rm -f "${swapfile}"
+    fi
+
+    info "正在创建 ${swap_size} swap 文件: ${swapfile}"
+    if ! fallocate -l "${swap_size}" "${swapfile}" 2>/dev/null; then
+        warn "fallocate 不可用或失败，改用 dd 创建 swapfile"
+        dd if=/dev/zero of="${swapfile}" bs=1M count="${swap_size_mb}" status=none
+    fi
+
+    chmod 600 "${swapfile}"
+    mkswap "${swapfile}" > /dev/null
+    swapon "${swapfile}"
 
     # 写入 fstab 持久化
-    if ! grep -q '/swapfile' /etc/fstab; then
-        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    local fstab_backup
+    fstab_backup="/etc/fstab.bak.$(date +%Y%m%d%H%M%S)"
+    cp /etc/fstab "${fstab_backup}"
+
+    if grep -qE '^[[:space:]]*/swapfile[[:space:]]+none[[:space:]]+swap[[:space:]]+' /etc/fstab; then
+        info "fstab 已存在 ${swapfile} 条目"
+    else
+        echo "${swapfile} none swap sw 0 0" >> /etc/fstab
+        info "已写入 fstab，并备份原文件: ${fstab_backup}"
     fi
+
     info "Swap ${swap_size} 已创建并启用"
 }

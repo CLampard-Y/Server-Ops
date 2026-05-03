@@ -55,6 +55,14 @@ run_06_swap
 run_07_ssh_hardening
 
 # ── 完成报告 ──
+ssh_report_user="${SSH_TARGET_USER:-${SUDO_USER:-root}}"
+ssh_report_home="$(getent passwd "${ssh_report_user}" 2>/dev/null | cut -d: -f6 || true)"
+ssh_key_count="0"
+if [[ -n "${ssh_report_home}" && -f "${ssh_report_home}/.ssh/authorized_keys" ]]; then
+    ssh_key_count="$(grep -cE '^(ssh-|ecdsa-|sk-)' "${ssh_report_home}/.ssh/authorized_keys" 2>/dev/null || true)"
+    ssh_key_count="${ssh_key_count:-0}"
+fi
+
 echo ""
 echo -e "${C_CYAN}╔══════════════════════════════════════════════════════╗${C_NC}"
 echo -e "${C_CYAN}║${C_NC}  ${C_BOLD}✅  Layer 1: System Core 初始化完成!${C_NC}"
@@ -66,7 +74,7 @@ printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "时区:"    "$(t
 printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "Locale:"  "$(locale 2>/dev/null | grep LANG= | head -1)"
 printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "Swap:"    "$(free -h | awk '/Swap/{print $2}')"
 printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "file-max:" "$(sysctl -n fs.file-max)"
-printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "SSH:"     "$(grep -c '^ssh-' /root/.ssh/authorized_keys 2>/dev/null || echo 0) 个公钥"
+printf "${C_CYAN}║${C_NC}  %-14s %-38s${C_CYAN}║${C_NC}\n" "SSH:"     "${ssh_report_user}: ${ssh_key_count} 个公钥"
 echo -e "${C_CYAN}╠══════════════════════════════════════════════════════╣${C_NC}"
 echo -e "${C_CYAN}║${C_NC}  ⚠️  建议重启一次使所有内核参数完全生效:          ${C_CYAN}║${C_NC}"
 echo -e "${C_CYAN}║${C_NC}     sudo reboot                                    ${C_CYAN}║${C_NC}"

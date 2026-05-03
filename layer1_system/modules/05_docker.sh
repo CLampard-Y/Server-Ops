@@ -7,32 +7,70 @@
 run_05_docker() {
     step "5/7" "安装 Docker & Docker Compose"
 
+    local need_install=0
     if command -v docker &> /dev/null; then
-        info "Docker 已存在，跳过安装: $(docker --version)"
+        info "Docker 已存在: $(docker --version)"
     else
-        # 添加 Docker 官方 GPG key
+        need_install=1
+    fi
+
+    if ! docker compose version &> /dev/null; then
+        need_install=1
+        warn "Docker Compose 插件缺失，将安装/修复 Docker CE 组件"
+    fi
+
+    if [[ "${need_install}" == "1" ]]; then
         install -m 0755 -d /etc/apt/keyrings
-        local distro_id codename
+        local distro_id codename apt_log
         distro_id=$(. /etc/os-release && echo "$ID")
         codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+        apt_log="$(mktemp)"
 
-        curl -fsSL "https://download.docker.com/linux/${distro_id}/gpg" | \
-            gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
+        if ! curl -fsSL "https://download.docker.com/linux/${distro_id}/gpg" | \
+            gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg; then
+            rm -f "${apt_log}"
+            error "Docker 官方 GPG key 下载或写入失败"
+        fi
         chmod a+r /etc/apt/keyrings/docker.gpg
 
-        # 添加 Docker 仓库
         cat > /etc/apt/sources.list.d/docker.list << DOCKER_EOF
 deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${distro_id} ${codename} stable
 DOCKER_EOF
 
-        apt-get update -qq
-        apt-get install -y -qq \
+        if ! apt-get update -qq > "${apt_log}" 2>&1; then
+            warn "APT update Docker 源失败，输出如下:"
+            while IFS= read -r line; do
+                echo "  ${line}" >&2
+            done < "${apt_log}"
+            rm -f "${apt_log}"
+            error "Docker 源更新失败"
+        fi
+
+        if ! apt-cache policy docker-ce | grep -qE 'Candidate:[[:space:]]+[0-9]'; then
+            rm -f "${apt_log}"
+            error "当前 Docker 源没有 docker-ce 候选版本: ${distro_id}/${codename}"
+        fi
+
+        if ! apt-get install -y -qq \
+            -o Dpkg::Options::="--force-confdef" \
+            -o Dpkg::Options::="--force-confold" \
             docker-ce docker-ce-cli containerd.io \
             docker-buildx-plugin docker-compose-plugin \
-            > /dev/null 2>&1
+            > "${apt_log}" 2>&1; then
+            warn "Docker 组件安装失败，APT 输出如下:"
+            while IFS= read -r line; do
+                echo "  ${line}" >&2
+            done < "${apt_log}"
+            rm -f "${apt_log}"
+            error "Docker 安装失败"
+        fi
+        rm -f "${apt_log}"
 
-        systemctl enable --now docker
         info "Docker 安装完成: $(docker --version)"
+    fi
+
+    if ! systemctl enable --now docker >/dev/null 2>&1; then
+        error "Docker 已安装但服务启动失败，请检查: systemctl status docker"
     fi
 
     # 验证 Docker Compose

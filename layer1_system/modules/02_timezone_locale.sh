@@ -13,14 +13,19 @@ run_02_timezone_locale() {
     step "2/7" "设置时区 + Locale 标准化"
 
     # ── 时区 ──
-    timedatectl set-timezone Asia/Shanghai
+    local timezone
+    timezone="${SERVER_OPS_TIMEZONE:-Asia/Shanghai}"
+    timedatectl set-timezone "${timezone}"
     info "当前时区: $(timedatectl show --property=Timezone --value)"
     info "当前时间: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 
     # ── Locale ──
     # 确保 en_US.UTF-8 可用，避免各类编码问题
     if ! locale -a 2>/dev/null | grep -qi "en_US.utf8"; then
-        apt-get install -y -qq locales > /dev/null 2>&1
+        apt-get install -y -qq \
+            -o Dpkg::Options::="--force-confdef" \
+            -o Dpkg::Options::="--force-confold" \
+            locales > /dev/null 2>&1
         sed -i 's/^# *en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
         locale-gen > /dev/null 2>&1
         info "en_US.UTF-8 locale 已生成"
@@ -28,6 +33,6 @@ run_02_timezone_locale() {
         info "en_US.UTF-8 locale 已存在 ✓"
     fi
 
-    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+    update-locale LANG=en_US.UTF-8
     info "默认 locale 已设为 en_US.UTF-8"
 }

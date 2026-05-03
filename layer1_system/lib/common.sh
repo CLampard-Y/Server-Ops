@@ -46,12 +46,25 @@ require_debian_like() {
     if [[ ! -f /etc/os-release ]]; then
         error "无法检测操作系统，仅支持 Debian/Ubuntu"
     fi
-    local id
+    local id version_id version_codename
     id=$(. /etc/os-release && echo "${ID}")
+    version_id=$(. /etc/os-release && echo "${VERSION_ID:-0}")
+    version_codename=$(. /etc/os-release && echo "${VERSION_CODENAME:-unknown}")
     if [[ "${id}" != "debian" && "${id}" != "ubuntu" ]]; then
         error "当前系统 ${id} 不受支持，仅支持 Debian/Ubuntu"
     fi
-    info "操作系统检测通过: ${id} $(. /etc/os-release && echo "${VERSION_CODENAME}")"
+
+    case "${id}" in
+        debian)
+            [[ "${version_id%%.*}" -ge 12 ]] || error "当前 Debian ${version_id} 不受支持，需要 Debian 12+"
+            ;;
+        ubuntu)
+            awk -v version="${version_id}" 'BEGIN { exit !(version >= 22.04) }' || \
+                error "当前 Ubuntu ${version_id} 不受支持，需要 Ubuntu 22.04+"
+            ;;
+    esac
+
+    info "操作系统检测通过: ${id} ${version_codename} (${version_id})"
 }
 
 # ── 路径解析 ──

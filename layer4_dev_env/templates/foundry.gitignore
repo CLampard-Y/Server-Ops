@@ -1,0 +1,15 @@
+# Foundry
+cache/
+out/
+broadcast/
+
+# Dependencies
+node_modules/
+
+# Secrets
+.env
+*.env
+.env.*
+*.key
+*.pem
+*.token

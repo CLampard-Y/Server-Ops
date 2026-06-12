@@ -1,0 +1,20 @@
+# ===========================================================
+#  subconverter — 订阅转换服务
+#  文档: https://github.com/tindy2013/subconverter
+#  部署目标: /home/App-Ops/subconverter/
+#
+#  说明:
+#  - 使用官方 Docker 镜像，避免在宿主机直接安装运行依赖
+#  - 默认仅绑定 127.0.0.1，建议通过反向代理/隧道受控访问
+#  - 默认配置由镜像内置，不向仓库目录写入运行时数据
+# ===========================================================
+
+services:
+  subconverter:
+    image: tindy2013/subconverter:latest
+    container_name: subconverter
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:25500:25500"
+    environment:
+      - TZ=Asia/Shanghai

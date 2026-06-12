@@ -6,12 +6,12 @@
 
 services:
   s-ui:
-    image: alireza7/s-ui:latest
+    image: ghcr.io/alireza0/s-ui:latest
     container_name: s-ui
     restart: unless-stopped
     network_mode: host
     volumes:
-      - ./data/db:/app/db
-      - ./data/cert:/app/cert
+      - /home/App-Data/s-ui/db:/app/db
+      - /home/App-Data/s-ui/cert:/app/cert
     environment:
       - TZ=Asia/Shanghai

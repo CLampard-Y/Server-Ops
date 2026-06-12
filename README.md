@@ -8,7 +8,7 @@ Server-Ops 用于把全新 Debian/Ubuntu 服务器按层初始化为可复用、
 | --- | --- | --- | --- |
 | Layer 1 | System Core | 系统底座：apt 基础包、Docker、BBR/sysctl、ulimit、Swap、SSH hardening | root |
 | Layer 2 | Basic Services | 长期基础服务：Portainer、Komari Server 等 | root / Docker |
-| Layer 3 | Business Apps | 业务 Docker 应用：3x-ui、qBittorrent、Alist、Komari Agent 等 | root / Docker |
+| Layer 3 | Business Apps | 业务 Docker 应用：3x-ui、qBittorrent、Alist、subconverter、Komari Agent 等 | root / Docker |
 | Layer 4 | Dev Environment | 用户级开发环境：Codex、cc-switch-cli、Foundry、Rust、Node/fnm、uv、ZK tools | 开发用户 |
 
 ## 1. 仓库结构
@@ -35,6 +35,7 @@ Server-Ops 用于把全新 Debian/Ubuntu 服务器按层初始化为可复用、
     komari-agent/
     qbittorrent/
     s-ui/
+    subconverter/
   layer4_dev_env/                  # Layer 4: 用户级开发环境
     install_dev_env.sh
     README.md
@@ -172,6 +173,7 @@ Layer 3 使用统一部署脚本 `deploy_service.sh`。每个应用只需要提�
 | `s-ui` | Xray 面板/兼容旧目录 |
 | `alist` | 文件列表/网盘聚合 |
 | `qbittorrent` | BT 下载服务 |
+| `subconverter` | 订阅转换服务 |
 | `komari-agent` | Komari Agent |
 
 交互式部署：

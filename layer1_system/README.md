@@ -178,6 +178,8 @@ docker-compose-plugin
 
 脚本会检查 `docker compose version`。如果系统已有 Docker 但缺少 Compose plugin，会尝试补齐 Docker CE 组件。
 
+Docker CE candidate 检测会为 `apt-cache` 单独使用 `LC_ALL=C`，避免 SSH 客户端传入的中文或其他 Locale 改变字段名称并导致误判。该设置只作用于检测命令，不会修改系统的 Locale 策略。若 Docker 官方源确实没有当前系统或架构的候选版本，脚本会输出 architecture、source、APT update warning 和 `apt-cache policy` 结果用于诊断。
+
 验证：
 
 ```bash

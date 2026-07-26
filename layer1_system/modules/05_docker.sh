@@ -21,9 +21,10 @@ run_05_docker() {
 
     if [[ "${need_install}" == "1" ]]; then
         install -m 0755 -d /etc/apt/keyrings
-        local distro_id codename apt_log
+        local distro_id codename architecture apt_log docker_candidate
         distro_id=$(. /etc/os-release && echo "$ID")
         codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+        architecture="$(dpkg --print-architecture)"
         apt_log="$(mktemp)"
 
         if ! curl -fsSL "https://download.docker.com/linux/${distro_id}/gpg" | \
@@ -34,7 +35,7 @@ run_05_docker() {
         chmod a+r /etc/apt/keyrings/docker.gpg
 
         cat > /etc/apt/sources.list.d/docker.list << DOCKER_EOF
-deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${distro_id} ${codename} stable
+deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${distro_id} ${codename} stable
 DOCKER_EOF
 
         if ! apt-get update -qq > "${apt_log}" 2>&1; then
@@ -46,10 +47,27 @@ DOCKER_EOF
             error "Docker 源更新失败"
         fi
 
-        if ! apt-cache policy docker-ce | grep -qE 'Candidate:[[:space:]]+[0-9]'; then
+        # apt-cache localizes field names (for example, Candidate becomes 候选).
+        # Force the C locale before parsing so SSH/client locale cannot change the result.
+        docker_candidate="$(
+            LC_ALL=C apt-cache policy docker-ce 2>/dev/null | \
+                awk '/^[[:space:]]*Candidate:/ { print $2; exit }' || true
+        )"
+        if [[ -z "${docker_candidate}" || "${docker_candidate}" == "(none)" ]]; then
+            warn "Docker CE candidate 检测失败"
+            warn "系统/架构: ${distro_id}/${codename} (${architecture})"
+            warn "Docker 源: https://download.docker.com/linux/${distro_id} ${codename} stable"
+            if [[ -s "${apt_log}" ]]; then
+                warn "APT update 输出如下:"
+                while IFS= read -r line; do
+                    echo "  ${line}" >&2
+                done < "${apt_log}"
+            fi
+            LC_ALL=C apt-cache policy docker-ce >&2 || true
             rm -f "${apt_log}"
             error "当前 Docker 源没有 docker-ce 候选版本: ${distro_id}/${codename}"
         fi
+        info "Docker CE candidate: ${docker_candidate}"
 
         if ! apt-get install -y -qq \
             -o Dpkg::Options::="--force-confdef" \

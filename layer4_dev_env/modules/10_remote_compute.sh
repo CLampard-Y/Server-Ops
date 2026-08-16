@@ -97,7 +97,13 @@ case "${remote_dir}" in
 esac
 
 cd "${remote_dir}"
-forge test "$@"
+forge_bin="${HOME}/.foundry/bin/forge"
+if [[ ! -x "${forge_bin}" ]]; then
+  echo "Forge executable is missing or not executable: ${forge_bin}" >&2
+  exit 127
+fi
+
+"${forge_bin}" test "$@"
 REMOTE_EOF
 EOF
 

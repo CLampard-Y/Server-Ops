@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# US 重计算机：默认只安装计算/测试工具，不安装 AI provider 管理工具。
+# 未来 compute-only runner：默认只安装计算/测试工具，不安装 AI provider 管理工具。
 
 PROFILE_NAME="us-compute"
 INSTALL_USER_DIRS="${INSTALL_USER_DIRS:-1}"

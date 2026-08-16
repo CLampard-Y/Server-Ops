@@ -22,8 +22,9 @@ layer4_dev_env/
   lib/
     common.sh                 # 日志、路径、安全检查、npm HOME prefix 检查
   profiles/
-    hk-dev.sh                 # HK 主开发机 profile
-    us-compute.sh             # US 重计算 runner profile
+    us-dev.sh                 # US dedicated 主开发机 profile
+    hk-dev.sh                 # HK fallback/auxiliary profile
+    us-compute.sh             # 未来 compute-only runner profile
     minimal.sh                # JP/跳板机最小 profile
   modules/
     01_user_dirs.sh           # 创建用户目录与私有配置目录
@@ -35,7 +36,7 @@ layer4_dev_env/
     07_rust.sh                # rustup + stable toolchain
     08_python_uv.sh           # uv + MoonMath/scientific Python venv
     09_zk_tools.sh            # Circom + circomlib + snarkjs，默认关闭
-    10_remote_compute.sh      # HK -> US 同步与 forge test helper
+    10_remote_compute.sh      # HK -> US 同步与 noninteractive forge test helper
   templates/
     AGENTS.md                 # 项目 agent 指南模板
     foundry.gitignore         # Foundry 项目 .gitignore 模板
@@ -45,31 +46,43 @@ layer4_dev_env/
 
 | Profile | 适用机器 | 默认安装 | 默认不安装 |
 | --- | --- | --- | --- |
-| `hk-dev` | HK 主开发机 | 用户目录、PATH、Node/fnm、Codex、cc-switch-cli、Foundry、Rust、uv、Python scientific venv、US helper | ZK tools |
-| `us-compute` | US Dedicated 计算 runner | 用户目录、PATH、Node/fnm、Foundry、Rust、uv、Python scientific venv | Codex、cc-switch-cli、ZK tools、US helper |
+| `us-dev` | US dedicated 主开发机与 Codex host | 用户目录、PATH、Node/fnm、Codex、cc-switch-cli、Foundry、Rust、uv、Python scientific venv | ZK tools、US helper |
+| `hk-dev` | HK fallback/auxiliary 开发机 | 用户目录、PATH、Node/fnm、Codex、cc-switch-cli、Foundry、Rust、uv、Python scientific venv、US helper | ZK tools |
+| `us-compute` | 未来 compute-only runner | 用户目录、PATH、Node/fnm、Foundry、Rust、uv、Python scientific venv | Codex、cc-switch-cli、ZK tools、US helper |
 | `minimal` | JP 跳板/极简环境 | 用户目录、PATH | AI tools、Foundry、Rust、Node、Python venv、ZK tools |
 
 ## 4. 快速使用
 
-### HK 主开发机
+当前 topology：US dedicated server 是 primary Solidity development host 和 Codex host；HK 保留为 fallback/auxiliary development host；`us-compute` 保留给未来的 compute-only runner。
+
+### US dedicated 主开发机
+
+```bash
+bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
+source ~/.bashrc
+```
+
+`us-dev` 是日常 Solidity、Foundry、Codex 和轻量测试的默认 profile。
+
+### HK fallback/auxiliary 开发机
 
 ```bash
 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
 source ~/.bashrc
 ```
 
-HK profile 适合日常 Solidity、ZK 学习、AI coding、轻量测试和把任务分发到 US 机器。
+`hk-dev` 保留完整开发工具链，适合 US 主开发机不可用时的 fallback，以及辅助开发和远程计算 helper。
 
-### US 重计算 runner
+### 未来 compute-only runner
 
 ```bash
 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-compute
 source ~/.bashrc
 ```
 
-US profile 默认不安装 Codex/cc-switch-cli，也不写 API/provider 配置。它主要用于 fuzz test、ZK proving、benchmark 等重任务。
+`us-compute` 默认不安装 Codex/cc-switch-cli，也不写 API/provider 配置。它保留给未来承载 fuzz test、ZK proving、benchmark 等 compute-only 任务的 runner。
 
-如果确实需要在 US 临时启用 AI 工具，可以显式打开：
+如果未来确实需要在 compute-only runner 临时启用 AI 工具，可以显式打开：
 
 ```bash
 INSTALL_CODEX_CLI=1 INSTALL_CC_SWITCH_CLI=1 \
@@ -110,7 +123,7 @@ JP 不建议安装 AI tools、API key、ZK proving 工具链，只保留最小 s
 
 该 venv 要求系统 `python3 >= 3.10`。Layer 1 已安装 `python3`、`python3-venv`、`python3-dev`，用于支撑这里的用户级 venv。
 
-默认安装的科学计算包使用固定版本，保证 HK/US 多次安装结果一致：
+默认安装的科学计算包使用固定版本，保证各 development/compute profile 多次安装结果一致：
 
 ```text
 numpy==2.2.6
@@ -132,21 +145,21 @@ ipython
 
 ```bash
 PYTHON_SCIENCE_VENV_DIR=~/code/.venvs/zk-math \
-  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 如需自定义包列表：
 
 ```bash
 PYTHON_SCIENCE_PACKAGES="numpy==2.2.6 sympy==1.13.3 pandas==2.2.3" \
-  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 注意：科学计算包不安装到系统 Python，不使用全局 `pip3 install`，避免污染 Layer 1。
 
 ## 7. ZK 工具链
 
-ZK 工具链版本敏感，因此 `hk-dev` 和 `us-compute` 默认都不安装 ZK tools：
+ZK 工具链版本敏感，因此 `us-dev`、`hk-dev` 和 `us-compute` 默认都不安装 ZK tools：
 
 ```bash
 INSTALL_ZK_TOOLS=0
@@ -156,7 +169,7 @@ INSTALL_ZK_TOOLS=0
 
 ```bash
 INSTALL_ZK_TOOLS=1 \
-  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 当前 `09_zk_tools.sh` 安装：
@@ -208,21 +221,21 @@ npm list -g --depth=0 circomlib
 
 ```bash
 INSTALL_ZK_TOOLS=1 CIRCOM_GIT_REF_TYPE=rev CIRCOM_GIT_REF=<commit-sha> \
-  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 如需改用其他 tag：
 
 ```bash
 INSTALL_ZK_TOOLS=1 CIRCOM_GIT_REF_TYPE=tag CIRCOM_GIT_REF=v2.2.2 \
-  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 Noir、Barretenberg/BB、Risc0、SP1 暂未默认接入，后续按学习阶段单独做 optional modules 并 pin 版本。
 
 ## 8. Codex + cc-switch-cli
 
-HK profile 默认安装 Codex CLI 和 cc-switch-cli，但不会写入任何 provider 或 API key。Codex 在 Linux 上会使用 `bubblewrap` 作为 sandbox 依赖；该系统包由 Layer 1 安装。
+`us-dev` 和 `hk-dev` 默认安装 Codex CLI 和 cc-switch-cli，但不会写入任何 provider 或 API key。Codex 在 Linux 上会使用 `bubblewrap` 作为 sandbox 依赖；该系统包由 Layer 1 安装。
 
 安装后在目标用户账号下执行：
 
@@ -302,8 +315,8 @@ SERVER_OPS_RSYNC_DELETE=1 \
 | 变量 | 默认值 | 作用 |
 | --- | --- | --- |
 | `NODE_VERSION` | `22` | fnm 安装的 Node.js 版本 |
-| `INSTALL_CODEX_CLI` | HK 为 `1`，US/Minimal 为 `0` | 是否安装 Codex CLI |
-| `INSTALL_CC_SWITCH_CLI` | HK 为 `1`，US/Minimal 为 `0` | 是否安装 cc-switch-cli |
+| `INSTALL_CODEX_CLI` | `us-dev`/`hk-dev` 为 `1`，`us-compute`/`minimal` 为 `0` | 是否安装 Codex CLI |
+| `INSTALL_CC_SWITCH_CLI` | `us-dev`/`hk-dev` 为 `1`，`us-compute`/`minimal` 为 `0` | 是否安装 cc-switch-cli |
 | `INSTALL_ZK_TOOLS` | `0` | 是否安装 Circom/circomlib/snarkjs |
 | `PYTHON_SCIENCE_VENV_DIR` | `~/code/.venvs/moonmath` | Python scientific venv 路径 |
 | `PYTHON_SCIENCE_PACKAGES` | 固定版本科学计算包 | Python scientific venv 包列表 |
@@ -342,17 +355,17 @@ Layer 4 比 Layer 1 更适合重复运行。它默认写入 `$HOME`，不会写 
 - 旧版 `.bashrc` managed block 会被新版 managed block 替换，不会重复堆叠 PATH。
 - 旧版或手动创建的 `~/.cc-switch`、`~/.codex`、provider/API 配置不会被删除或覆盖。
 
-推荐重跑 HK profile：
+推荐在 US 主开发机重跑 `us-dev` profile：
 
 ```bash
-bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 source ~/.bashrc
 ```
 
 如需安装或校准 ZK tools：
 
 ```bash
-INSTALL_ZK_TOOLS=1 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+INSTALL_ZK_TOOLS=1 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 source ~/.bashrc
 ```
 
@@ -360,7 +373,7 @@ source ~/.bashrc
 
 ```bash
 INSTALL_ZK_TOOLS=1 INSTALL_ZK_FORCE=1 \
-  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+  bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 ## 13. 安全规则
@@ -369,8 +382,10 @@ INSTALL_ZK_TOOLS=1 INSTALL_ZK_FORCE=1 \
 - npm global prefix 必须在 `$HOME` 下，否则安装 AI/ZK npm 工具时会失败，避免污染系统目录。
 - 不写入 API key、不创建 cc-switch provider、不提交任何 provider 配置。
 - `~/.cc-switch`、`~/.codex`、`~/.config/opencode` 使用 `700` 权限。
-- 不要在 JP 跳板机执行 `hk-dev` profile。
-- US 默认保持 compute runner，不默认放 AI tools 和 API key。
+- 不要在 JP 跳板机执行 `us-dev` 或 `hk-dev` profile。
+- US dedicated server 默认使用 `us-dev`，作为 primary development 和 Codex host。
+- HK 使用 `hk-dev`，作为 fallback/auxiliary development host。
+- `us-compute` 保留给未来的 compute-only runner，默认不安装 AI tools。
 
 ## 14. 暂未接入的内容
 

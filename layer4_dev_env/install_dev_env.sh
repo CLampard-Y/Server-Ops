@@ -3,6 +3,7 @@
 #  Server-Ops — Layer 4: Dev Environment installer
 #
 #  Usage:
+#    bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 #    bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
 #    bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-compute
 #    bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh minimal
@@ -23,14 +24,15 @@ usage() {
 Usage: bash ${0} <profile>
 
 Profiles:
-  hk-dev      Full HK development workstation: Codex, cc-switch-cli, Foundry, Rust, uv, Python venv.
-  us-compute  US compute runner: Foundry, Rust, Node, uv, Python venv. AI tools disabled by default.
+  us-dev      Primary US development host: Codex, cc-switch-cli, Foundry, Rust, uv, Python venv.
+  hk-dev      Fallback/auxiliary HK development host with the full development toolchain.
+  us-compute  Future compute-only runner: Foundry, Rust, Node, uv, Python venv. AI tools disabled by default.
   minimal     Minimal jump/dev shell directories and PATH block only.
 
 Environment overrides:
   NODE_VERSION=22
-  INSTALL_CODEX_CLI=1       Enable Codex on us-compute if needed.
-  INSTALL_CC_SWITCH_CLI=1   Enable cc-switch-cli on us-compute if needed.
+  INSTALL_CODEX_CLI=1       Override the selected profile to enable Codex.
+  INSTALL_CC_SWITCH_CLI=1   Override the selected profile to enable cc-switch-cli.
   INSTALL_ZK_TOOLS=1        Install Circom, circomlib, and snarkjs.
   PYTHON_SCIENCE_VENV_DIR   Default: ~/code/.venvs/moonmath.
   CIRCOM_GIT_REF_TYPE=tag   tag, rev, or branch. Default: tag.
@@ -44,7 +46,7 @@ if [[ -z "${PROFILE}" || "${PROFILE}" == "-h" || "${PROFILE}" == "--help" ]]; th
 fi
 
 case "${PROFILE}" in
-    hk-dev|us-compute|minimal) ;;
+    us-dev|hk-dev|us-compute|minimal) ;;
     *) error "未知 profile: ${PROFILE}" ;;
 esac
 

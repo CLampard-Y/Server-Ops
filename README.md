@@ -89,12 +89,21 @@ sudo reboot
 
 Layer 4 不通过 root 主控菜单执行。请使用 VS Code Remote-SSH 的开发用户登录后运行：
 
+US primary development host：
+
+```bash
+bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
+source ~/.bashrc
+```
+
+HK fallback/auxiliary 开发机：
+
 ```bash
 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
 source ~/.bashrc
 ```
 
-US 计算机：
+未来 compute-only runner：
 
 ```bash
 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-compute
@@ -210,21 +219,24 @@ Layer 4 是用户级开发环境，不应 root 执行，不写 API key，不污�
 
 | Profile | 适用机器 | 默认内容 |
 | --- | --- | --- |
-| `hk-dev` | HK 主开发机 | Node/fnm、Codex、cc-switch-cli、Foundry、Rust、uv、Python scientific venv、US helper |
-| `us-compute` | US 重计算 runner | Node/fnm、Foundry、Rust、uv、Python scientific venv；AI tools 默认关闭 |
+| `us-dev` | US dedicated 主开发机与 Codex host | Node/fnm、Codex、cc-switch-cli、Foundry、Rust、uv、Python scientific venv |
+| `hk-dev` | HK fallback/auxiliary 开发机 | Node/fnm、Codex、cc-switch-cli、Foundry、Rust、uv、Python scientific venv、US helper |
+| `us-compute` | 未来 compute-only runner | Node/fnm、Foundry、Rust、uv、Python scientific venv；AI tools 默认关闭 |
 | `minimal` | JP 跳板/极简环境 | 用户目录与 PATH block |
 
-HK 主开发机：
+当前 topology：US dedicated server 是 primary Solidity development host 和 Codex host；HK 保留为 fallback/auxiliary development host；`us-compute` 保留给未来的 compute-only runner。
+
+US 主开发机：
 
 ```bash
-bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 source ~/.bashrc
 ```
 
 ZK tools 默认关闭。需要 Circom/circomlib/snarkjs 时显式启用：
 
 ```bash
-INSTALL_ZK_TOOLS=1 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+INSTALL_ZK_TOOLS=1 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 ## 7. 添加新服务或应用
@@ -255,7 +267,7 @@ Layer 4 新工具应遵循：
 - 安装到 `$HOME` 下。
 - 不写 API key。
 - 不污染 `/usr/local`。
-- 通过 profile 开关控制 HK/US/JP 是否启用。
+- 通过 profile 开关控制不同 development、compute 和 minimal 角色是否启用。
 - 版本敏感工具应 pin 版本或提供明确覆盖变量。
 
 ## 8. 目录约定
@@ -291,14 +303,14 @@ sudo SSH_TARGET_USER=<target-user> GITHUB_USERNAME=<github-user> \
 推荐 Layer 4 重跑方式：
 
 ```bash
-bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 source ~/.bashrc
 ```
 
 如需补齐或校准 ZK tools：
 
 ```bash
-INSTALL_ZK_TOOLS=1 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh hk-dev
+INSTALL_ZK_TOOLS=1 bash /home/Server-Ops/layer4_dev_env/install_dev_env.sh us-dev
 ```
 
 更详细的幂等性说明见：
@@ -345,7 +357,9 @@ npm list -g --depth=0 circomlib
 - 仓库不保存 API key、provider secrets、钱包私钥、助记词或 `.env`。
 - SSH hardening 后不要立即关闭当前 SSH 会话，应新开终端测试登录。
 - Docker group 授权不默认执行，因为它接近 root 权限。
-- US 机器默认作为 compute runner，不默认放 AI tools 和 API key。
+- US dedicated server 使用 `us-dev`，作为 primary Solidity development host 和 Codex host。
+- HK 使用 `hk-dev`，作为 fallback/auxiliary development host。
+- `us-compute` 保留给未来的 compute-only runner，默认不安装 AI tools。
 - JP 机器默认作为跳板/最小环境，不运行完整 dev profile。
 
 ## 12. 许可证

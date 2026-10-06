@@ -1,0 +1,22 @@
+services:
+  chromium:
+    container_name: chromium
+    image: lscr.io/linuxserver/chromium:latest
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: America/New_York
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+      LANGUAGE: en_US:en
+    volumes:
+      - /home/App-Data/chromium/config:/config
+    ports:
+      - "127.0.0.1:3001:3001"
+    shm_size: "1gb"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
